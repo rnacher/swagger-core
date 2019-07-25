@@ -59,6 +59,7 @@ import io.swagger.v3.jaxrs2.resources.Ticket2806Resource;
 import io.swagger.v3.jaxrs2.resources.Ticket2818Resource;
 import io.swagger.v3.jaxrs2.resources.Ticket2848Resource;
 import io.swagger.v3.jaxrs2.resources.Ticket3015Resource;
+import io.swagger.v3.jaxrs2.resources.TicketRNRConcreteImplementation;
 import io.swagger.v3.jaxrs2.resources.UserAnnotationResource;
 import io.swagger.v3.jaxrs2.resources.extensions.ExtensionsResource;
 import io.swagger.v3.jaxrs2.resources.extensions.OperationExtensionsResource;
@@ -2003,7 +2004,7 @@ public class ReaderTest {
                 "          type: string\n";
         SerializationMatchers.assertEqualsToYaml(openAPI, yaml);
     }
-    
+
     @Test(description = "Filter class return type")
     public void testTicket3074() {
         Reader reader = new Reader(new OpenAPI());
@@ -2085,6 +2086,21 @@ public class ReaderTest {
                 "      xml:\n" +
                 "        name: User\n";
         SerializationMatchers.assertEqualsToYaml(openAPI, yaml);
+    }
+
+    @Test(description = "test ticket #RNR annotated interface")
+    public void testRNR() {
+        Reader reader = new Reader(new OpenAPI());
+        OpenAPI openAPI = reader.read(TicketRNRConcreteImplementation.class);
+        Paths paths = openAPI.getPaths();
+        assertEquals(paths.size(), 1);
+        PathItem pathItem = paths.get("/resources");
+        assertNotNull(pathItem);
+        Operation operation = pathItem.getPost();
+        assertNotNull(operation);
+        System.out.println("********************KK**********"+operation);
+        assertTrue(operation.getResponses().getDefault().getContent().keySet().contains("*/*"));
+
     }
 
 }
