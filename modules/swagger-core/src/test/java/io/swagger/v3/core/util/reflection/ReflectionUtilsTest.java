@@ -12,9 +12,11 @@ import org.testng.annotations.Test;
 
 import javax.ws.rs.Path;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import static org.testng.Assert.assertNull;
 
@@ -26,6 +28,11 @@ public class ReflectionUtilsTest {
         Assert.assertEquals(ReflectionUtils.typeFromString("java.lang.String"), (Type) String.class);
         Assert.assertNull(ReflectionUtils.typeFromString("FakeType"));
         Assert.assertNull(ReflectionUtils.typeFromString(null));
+    }
+
+    public static void main(String[] args) throws NoSuchMethodException {
+      new ReflectionUtilsTest().isOverriddenMethodTest();
+      new ReflectionUtilsTest().isNotOverriddenMethodTest();
     }
 
     @Test
@@ -42,6 +49,9 @@ public class ReflectionUtilsTest {
             } else if ("parametrizedMethod3".equals(method.getName())) {
                 Assert.assertFalse(ReflectionUtils.isOverriddenMethod(method, Child.class));
             }
+            else if ("equals".equals(method.getName())) {
+              Assert.assertFalse(ReflectionUtils.isOverriddenMethod(method, Object.class));
+            }
         }
 
         for (Method method : Object.class.getMethods()) {
@@ -55,8 +65,61 @@ public class ReflectionUtilsTest {
                 Assert.assertTrue(ReflectionUtils.isOverriddenMethod(method, IParent.class));
             } else if ("parametrizedMethod2".equals(method.getName())) {
                 Assert.assertFalse(ReflectionUtils.isOverriddenMethod(method, IParent.class));
+            } else if ("parametrizedMethod6".equals(method.getName())) {
+              Assert.assertFalse(ReflectionUtils.isOverriddenMethod(method, IParent.class));
             } else {
                 Assert.fail("Method not expected");
+            }
+        }
+    }
+    @Test
+    public void isNotOverriddenMethodTest() throws NoSuchMethodException {
+        {
+            List<Method> notOverriddenMethods = ReflectionUtils.getNotOverriddenMethods(Child.class);
+            for (Method method : Child.class.getMethods()) {
+                if ("parametrizedMethod1".equals(method.getName())) {
+                    final Class<?> first = method.getParameterTypes()[0];
+                    if (Number.class.equals(first)) {
+                        Assert.assertFalse(notOverriddenMethods.contains(method));
+                    } else if (Integer.class.equals(first)) {
+                        Assert.assertTrue(notOverriddenMethods.contains(method));
+                    }
+                } else if ("parametrizedMethod3".equals(method.getName())) {
+                    Assert.assertTrue(notOverriddenMethods.contains(method));
+                } else if ("equals".equals(method.getName())) {
+                    Assert.assertTrue(notOverriddenMethods.contains(method));
+                } else if ("parametrizedMethod6".equals(method.getName())) {
+                    System.out.println(method);
+                    ParameterizedType type = (ParameterizedType) method.getGenericParameterTypes()[0];
+                    if (Number.class.equals(type.getActualTypeArguments()[0])) {
+                        Assert.assertFalse(notOverriddenMethods.contains(method));
+                    } else if (Long.class.equals(type.getActualTypeArguments()[0])) {
+                        Assert.assertTrue(notOverriddenMethods.contains(method));
+                    }else
+                      Assert.fail("not expected!");
+              }
+            }
+        }
+        {
+            List<Method> notOverriddenMethods = ReflectionUtils.getNotOverriddenMethods(Object.class);
+            for (Method method : Object.class.getMethods()) {
+                if ("equals".equals(method.getName())) {
+                    Assert.assertTrue(notOverriddenMethods.contains(method));
+                }
+            }
+        }
+        {
+            List<Method> notOverriddenMethods = ReflectionUtils.getNotOverriddenMethods(IParent.class);
+            for (Method method : IParent.class.getMethods()) {
+                if ("parametrizedMethod5".equals(method.getName())) {
+                    Assert.assertTrue(notOverriddenMethods.contains(method));
+                } else if ("parametrizedMethod2".equals(method.getName())) {
+                    Assert.assertTrue(notOverriddenMethods.contains(method));
+                } else if ("parametrizedMethod6".equals(method.getName())) {
+                  Assert.assertTrue(notOverriddenMethods.contains(method));
+                } else {
+                    Assert.fail("Method not expected");
+                }
             }
         }
     }

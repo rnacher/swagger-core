@@ -374,8 +374,9 @@ public class Reader implements OpenApiReader {
         globalParameters.addAll(ReaderUtils.collectFieldParameters(cls, components, classConsumes, null));
 
         // iterate class methods
-        // Method methods[] = cls.getMethods();
-        List<Method> methods  =  getMethodsInsteadOverrinding(cls);
+//         Method methods[] = cls.getMethods();
+        List<Method> methods  =  ReflectionUtils.getNotOverriddenMethods(cls);
+
         for (Method method : methods) {
             if (isOperationHidden(method)) {
                 continue;
@@ -631,49 +632,6 @@ public class Reader implements OpenApiReader {
         }
 
         return openAPI;
-    }
-
-    private List<Method> getMethodsInsteadOverrinding(Class<?> cls) {
-
-      List<Method> lst = new ArrayList<>();
-      Method[] methods = cls.getMethods();
-      for (int pos = 0; pos < methods.length; pos++) {
-        Method methodToFind = methods[pos];
-        if (methodToFind.getName().equals("create")) {
-          System.out.println(methodToFind);
-          Type[] genericParameterTypes = methodToFind.getGenericParameterTypes();
-          System.out.println(genericParameterTypes);
-        }
-        boolean publish = true;
-        for (int pos2 = pos + 1; publish && pos2 < methods.length; pos2++) {
-          Method method = methods[pos2];
-          if (method.equals(methodToFind)) {
-            System.out.println("found same siganture! method equals ERROR");
-          }
-          if (method.getName().equals(methodToFind.getName())
-              && methodToFind.getReturnType().isAssignableFrom(method.getReturnType())) {
-            Class<?>[] parameterTypes = method.getParameterTypes();
-            Class<?>[] parameterTypesToFind = methodToFind.getParameterTypes();
-            if (parameterTypes.length == parameterTypesToFind.length) {
-              for (int idx = 0; idx < parameterTypes.length; idx++) {
-                if (parameterTypesToFind[idx].isAssignableFrom(parameterTypes[idx])) {
-
-                  System.out.println(
-                      "found overriden method! " + method.getName() + " overrides " + methodToFind);
-                  publish = false;
-                  break;
-                }
-              }
-            }
-          }
-        }
-        System.out.println("publish: " + publish + " method " + methodToFind);
-        if (publish) {
-          lst.add(methodToFind);
-        }
-
-      }
-      return lst;
     }
 
     protected Content processContent(Content content, Schema schema, Consumes methodConsumes, Consumes classConsumes) {

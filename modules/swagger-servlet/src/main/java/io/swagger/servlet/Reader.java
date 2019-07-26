@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -63,10 +64,12 @@ public class Reader {
         if (swaggerDefinition != null) {
             readSwaggerConfig(swaggerDefinition);
         }
+        // Method methods[] = cls.getMethods();
+        List<Method> methods  =  ReflectionUtils.getMethodsInsteadOverrinding(context.getCls());
         for (Method method : context.getCls().getMethods()) {
-            if (ReflectionUtils.isOverriddenMethod(method, context.getCls())) {
-                continue;
-            }
+//            if (ReflectionUtils.isOverriddenMethod(method, context.getCls())) {
+//                continue;
+//            }
             final Operation operation = new Operation();
             String operationPath = null;
             String httpMethod = null;

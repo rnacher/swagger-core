@@ -85,6 +85,42 @@ public class ReflectionUtils {
     }
 
     /**
+     * Returns the list of methods of the given class that are not overridden from the superclass or superinterface.
+     *
+     * @param cls          is the class
+     * @return the list of not overridden methods
+     */
+    public static List<Method> getNotOverriddenMethods(Class<?> cls) {
+        List<Method> notOverridenMethods = new ArrayList<>();
+        Method[] methods = cls.getMethods();
+        for (int candidateIdx = 0; candidateIdx < methods.length; candidateIdx++) {
+            Method candidate = methods[candidateIdx];
+            boolean isOverriden=false;
+            for (int idx = 0; !isOverriden && idx < methods.length; idx++) {
+                if(candidateIdx==idx)
+                    continue;
+                Method method = methods[idx];
+                if (method.getName().equals(candidate.getName()) && candidate.getReturnType().isAssignableFrom(method.getReturnType())) {
+                    Class<?>[] parameterTypes = method.getParameterTypes();
+                    Class<?>[] parameterTypesCandidate = candidate.getParameterTypes();
+                    if (parameterTypes.length == parameterTypesCandidate.length) {
+                        for (int paramIdx = 0; paramIdx < parameterTypes.length; paramIdx++) {
+                            if (parameterTypesCandidate[paramIdx].isAssignableFrom(parameterTypes[paramIdx])) {
+                                isOverriden=true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!isOverriden) {
+              notOverridenMethods.add(candidate);
+            }
+      }
+      return notOverridenMethods;
+    }
+
+    /**
      * Returns overridden method from superclass if it exists. If method was not found returns null.
      *
      * @param method is method to find
