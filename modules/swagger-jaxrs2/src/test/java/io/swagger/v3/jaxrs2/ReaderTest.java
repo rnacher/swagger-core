@@ -2088,17 +2088,21 @@ public class ReaderTest {
         SerializationMatchers.assertEqualsToYaml(openAPI, yaml);
     }
 
+    public static void main(String[] args) {
+      new ReaderTest().testRNR();
+    }
+
     @Test(description = "test ticket #RNR annotated interface")
     public void testRNR() {
         Reader reader = new Reader(new OpenAPI());
         OpenAPI openAPI = reader.read(TicketRNRConcreteImplementation.class);
+        System.out.println(openAPI);
         Paths paths = openAPI.getPaths();
-        assertEquals(paths.size(), 1);
-        PathItem pathItem = paths.get("/resources");
+        assertEquals(paths.size(), 2);
+        PathItem pathItem = paths.get("/resources/list");
         assertNotNull(pathItem);
         Operation operation = pathItem.getPost();
         assertNotNull(operation);
-        System.out.println("********************KK**********"+operation);
         assertTrue(operation.getResponses().getDefault().getContent().keySet().contains("*/*"));
 
     }

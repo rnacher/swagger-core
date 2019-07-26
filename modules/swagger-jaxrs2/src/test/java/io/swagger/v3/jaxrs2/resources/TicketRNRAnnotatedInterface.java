@@ -12,5 +12,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "resource")
 public interface TicketRNRAnnotatedInterface<T extends Number> {
   @POST
+  @Path("list")
   Response postResource(List<T> payload);
+
+  @POST
+  @Path("single")
+  Response postResource(T payload);
 }
