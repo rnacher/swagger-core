@@ -305,9 +305,9 @@ public class Reader {
             Method methods[] = cls.getMethods();
             for (Method method : methods) {
                 AnnotatedMethod annotatedMethod = bd.findMethod(method.getName(), method.getParameterTypes());
-                if (ReflectionUtils.isOverriddenMethod(method, cls)) {
-                    continue;
-                }
+//                if (ReflectionUtils.isOverriddenMethod(method, cls)) {
+//                    continue;
+//                }
                 javax.ws.rs.Path methodPath = ReflectionUtils.getAnnotation(method, javax.ws.rs.Path.class);
 
                 String operationPath = getPath(apiPath, methodPath, parentPath, isSubresource);

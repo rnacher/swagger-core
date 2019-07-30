@@ -62,28 +62,39 @@ public class ReflectionUtils {
      * @return true if the method is overridden method
      */
     public static boolean isOverriddenMethod(Method methodToFind, Class<?> cls) {
-        Set<Class<?>> superClasses = Sets.newHashSet(cls.getInterfaces());
-
-        if (cls.getSuperclass() != null) {
-            superClasses.add(cls.getSuperclass());
-        }
-
-        for (Class<?> superClass : superClasses) {
-            if (superClass != null && !(superClass.equals(Object.class))) {
-                for (Method method : superClass.getMethods()) {
-                    if (method.getName().equals(methodToFind.getName()) && method.getReturnType().isAssignableFrom(methodToFind.getReturnType())
-                            && Arrays.equals(method.getParameterTypes(), methodToFind.getParameterTypes()) && !Arrays.equals(method.getGenericParameterTypes(), methodToFind.getGenericParameterTypes())) {
-                        return true;
-                    }
-                }
-                if (isOverriddenMethod(methodToFind, superClass)) {
-                    return true;
-                }
-            }
-
-        }
-        return false;
+      return !getMethods(cls).contains(methodToFind);
     }
+
+    public static List<Method> getMethods(Class<?> cls) {
+      List<Method> notOverridenMethods = new ArrayList<>();
+      Method[] methods = cls.getMethods();
+      for (int candidateIdx = 0; candidateIdx < methods.length; candidateIdx++) {
+          Method candidate = methods[candidateIdx];
+          boolean isOverriden=false;
+          for (int idx = 0; !isOverriden && idx < methods.length; idx++) {
+              if(candidateIdx==idx)
+                  continue;
+              Method method = methods[idx];
+              if (method.getName().equals(candidate.getName()) && candidate.getReturnType().isAssignableFrom(method.getReturnType())) {
+                  Class<?>[] parameterTypes = method.getParameterTypes();
+                  Class<?>[] parameterTypesCandidate = candidate.getParameterTypes();
+                  if (parameterTypes.length == parameterTypesCandidate.length) {
+                      for (int paramIdx = 0; paramIdx < parameterTypes.length; paramIdx++) {
+                          if (parameterTypesCandidate[paramIdx].isAssignableFrom(parameterTypes[paramIdx])) {
+                              isOverriden=true;
+                              break;
+                          }
+                      }
+                  }
+              }
+          }
+          if (!isOverriden) {
+            notOverridenMethods.add(candidate);
+          }
+    }
+    return notOverridenMethods;
+  }
+
 
     /**
      * Returns overridden method from superclass if it exists. If method was not found returns null.
